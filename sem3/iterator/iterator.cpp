@@ -1,21 +1,16 @@
-// Итератор
-// - итератор по массиву
-// - итератор по map<string, ...>
-// возвращающий ключ-значение с определённой
-// подстрокой в ключе
 #include <array>
 #include <iostream>
+#include <iterator>
 #include <map>
 #include <string>
 #include <vector>
-#include <array>
 
+using std::array;
 using std::cout;
 using std::endl;
 using std::map;
 using std::string;
 using std::vector;
-using std::array;
 
 template <typename T>
 vector<string> getStringMapKeys(map<string, T> &referenceMap) {
@@ -27,10 +22,22 @@ vector<string> getStringMapKeys(map<string, T> &referenceMap) {
 }
 
 template <typename T> class Iterator {
-public:
+  public:
     void Next();
     T Current();
     bool IsDone();
+};
+
+template <typename T, std::size_t N> class ArrayIterator : public Iterator<T> {
+  private:
+    array<T, N> *arr;
+    int current = 0;
+
+  public:
+    ArrayIterator<T, N>(array<T, N> *referenceArr) : arr(referenceArr) {}
+    bool isDone() { return arr->size() > current; }
+    void Next() { current++; }
+    T Current() { return arr->at(current); }
 };
 
 template <typename T> class MapIterator : public Iterator<T> {
@@ -38,6 +45,7 @@ template <typename T> class MapIterator : public Iterator<T> {
     vector<string> validKeys;
     map<string, T> *mapPtr;
     int current = 0;
+
   public:
     MapIterator<T>(map<string, T> *referenceMap, string substring)
         : mapPtr(referenceMap) {
@@ -54,6 +62,11 @@ template <typename T> class MapIterator : public Iterator<T> {
     T Current() { return mapPtr->at(validKeys[current]); }
 };
 
+template <typename T, std::size_t N> class BetterArray : public array<T, N> {
+  public:
+    ArrayIterator<T, N> CreateIterator() { return ArrayIterator<T, N>(this); };
+};
+
 template <typename T> class BetterMap : public map<string, T> {
   public:
     MapIterator<T> CreateIterator(string substring) {
@@ -61,16 +74,18 @@ template <typename T> class BetterMap : public map<string, T> {
     };
 };
 
-
-
 int main() {
     BetterMap<int> foo;
+    BetterArray<int, 4> bar{1001, 230, 31, 31};
     foo["lina"] = 1;
     foo["raslina"] = 2;
     foo["linaras"] = 3;
     foo["amogus"] = 17;
     int i = 0;
     for (auto it = foo.CreateIterator("lina"); it.isDone(); it.Next()) {
+        cout << it.Current() << endl;
+    }
+    for (auto it = bar.CreateIterator(); it.isDone(); it.Next()) {
         cout << it.Current() << endl;
     }
     return 0;
