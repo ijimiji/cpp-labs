@@ -3,17 +3,19 @@
 // - итератор по map<string, ...>
 // возвращающий ключ-значение с определённой
 // подстрокой в ключе
+#include <array>
 #include <iostream>
 #include <map>
 #include <string>
-#include <utility>
 #include <vector>
+#include <array>
 
 using std::cout;
 using std::endl;
 using std::map;
 using std::string;
 using std::vector;
+using std::array;
 
 template <typename T>
 vector<string> getStringMapKeys(map<string, T> &referenceMap) {
@@ -24,18 +26,18 @@ vector<string> getStringMapKeys(map<string, T> &referenceMap) {
     return keys;
 }
 
-template <typename T> class IIterator {
+template <typename T> class Iterator {
+public:
     void Next();
     T Current();
     bool IsDone();
 };
 
-template <typename T> class MapIterator : public IIterator<T> {
+template <typename T> class MapIterator : public Iterator<T> {
   private:
     vector<string> validKeys;
     map<string, T> *mapPtr;
     int current = 0;
-
   public:
     MapIterator<T>(map<string, T> *referenceMap, string substring)
         : mapPtr(referenceMap) {
@@ -58,6 +60,8 @@ template <typename T> class BetterMap : public map<string, T> {
         return MapIterator<T>(this, substring);
     };
 };
+
+
 
 int main() {
     BetterMap<int> foo;
