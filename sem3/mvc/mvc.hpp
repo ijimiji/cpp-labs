@@ -1,40 +1,37 @@
 #pragma once
 
+#include <functional>
+#include <iostream>
+#include <string>
 #include <vector>
 
-class Observer
-{
-public:
-    virtual void update() = 0;
+template<typename Model>
+class BaseModel {
+  public:
+    std::vector<std::function<void(Model *)> *> subscribers;
+    void subscribe(std::function<void(Model *)> *sub) {
+        subscribers.push_back(sub);
+    }
+    void notify() {
+        for (auto sub : subscribers) {
+            sub->operator()(this);
+        }
+    }
 };
-
-class BaseModel
-{
-public:
-   void addObserver(Observer *observer);
-   void notifyUpdate();
-private:
-   std::vector<Observer*> _observers;
-}; 
 
 template<typename Model>
-class Controller
-{
-public:
-   Controller(Model *model)
-   {
-      _model = model;
-   }
-private:
-   Model *_model;
+class Controller {
+  public:
+    Model &model;
+    Controller(Model &m) : model(m){};
 };
 
-template <typename Model> class ConsoleView : public Observer {
+template<typename ModelType, typename ControllerType>
+class BaseView {
   public:
-    ConsoleView(Model *model) : _model(model){
-        _model->addObserver(this);
-    }
-    virtual void render() = 0;
-  private:
-    Model *_model;
+    std::string modelAppearance;
+    ControllerType &controller;
+    BaseView(ControllerType &c) : controller(c) { c.model.subscribe(&updateView); }
+    std::function<void(ModelType *)> updateView = [this](ModelType *m) {};
+    void showData() { std::cout << modelAppearance << std::endl; }
 };
