@@ -1,6 +1,5 @@
 file(GLOB sources
-     "src/*.hpp"
-     "src/*.cpp"
+     "src/posix.cpp"
 )
 
 set(CMAKE_CXX_STANDARD 20)

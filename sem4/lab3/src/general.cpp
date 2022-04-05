@@ -1,15 +1,15 @@
+#include <thread>
 #include <chrono>
 #include <cstdint>
 #include <cstdio>
 #include <memory>
 #include <mutex>
-#include <thread>
 #include <vector>
-
 #define fn auto
 #define var auto
 #define let const auto
 #define matrix std::vector<std::vector<int32_t>>
+
 std::mutex mutex;
 
 std::vector<int32_t> factors(int32_t n) {
@@ -41,15 +41,21 @@ fn mult(matrix &a, matrix &b, matrix &c, int32_t number, int32_t blocks) {
     }
 }
 
+void *mult_pair(matrix &a, matrix &b, matrix &c, int32_t i, int32_t k) {
+    if (i == k * k - 1) {
+        mult(a, b, c, i, k);
+    } else {
+        mult(a, b, c, i, k);
+        mult(a, b, c, i + 1, k);
+    }
+    return NULL;
+}
+
+
 fn main(int32_t argc, char **argv)->int32_t {
     int32_t n;
 
-    if (argc == 1) {
-        fprintf(stderr, "No input filename provided\n");
-        return 1;
-    }
-
-    let filename = argv[1];
+    let filename = "input";
     let input = fopen(filename, "r");
 
     fscanf(input, "%d", &n);
@@ -81,28 +87,11 @@ fn main(int32_t argc, char **argv)->int32_t {
     }
 
     for (let k : factors(n)) {
-
         std::vector<std::thread> threads;
-
         let start = std::chrono::steady_clock::now();
-
         for (int32_t i = 0; i < k * k; i += 2) {
-            if (i == k * k - 1) {
-                threads.push_back(std::thread(
-                    [](matrix &a, matrix &b, matrix &c, int32_t number,
-                       int32_t blocks) {
-                        mult(a, b, c, number, blocks);
-                    },
-                    std::ref(a), std::ref(b), std::ref(c), i, k));
-            } else {
-                threads.push_back(std::thread(
-                    [](matrix &a, matrix &b, matrix &c, int32_t number,
-                       int32_t blocks) {
-                        mult(a, b, c, number, blocks);
-                        mult(a, b, c, number + 1, blocks);
-                    },
-                    std::ref(a), std::ref(b), std::ref(c), i, k));
-            }
+
+            threads.push_back(std::thread(mult_pair, std::ref(a), std::ref(b), std::ref(c), i, k));
         }
         for (var &thread : threads) {
             thread.join();
