@@ -12,12 +12,12 @@
 #include <pthread.h>
 struct args
 {
-    matrix &a;
-    matrix &b;
-    matrix &c;
+    matrix *a;
+    matrix *b;
+    matrix *c;
     int32_t i;
     int32_t k;
-    args(matrix &a, matrix &b, matrix &c, int32_t i, int32_t k) : a(a), b(b), c(c), i(i), k(k){}
+    args(matrix *a, matrix *b, matrix *c, int32_t i, int32_t k) : a(a), b(b), c(c), i(i), k(k){}
 };
 
 class Mutex {
@@ -42,8 +42,8 @@ std::vector<int32_t> factors(int32_t n) {
     return out;
 }
 
-fn mult(matrix &a, matrix &b, matrix &c, int32_t number, int32_t blocks) {
-    int32_t n = a.size();
+fn mult(matrix *a, matrix *b, matrix *c, int32_t number, int32_t blocks) {
+    int32_t n = a->size();
     int32_t length = n / blocks;
     let beginRow = ((number) / blocks) * length;
     let endRow = beginRow + length - 1;
@@ -54,7 +54,7 @@ fn mult(matrix &a, matrix &b, matrix &c, int32_t number, int32_t blocks) {
         for (int32_t j = beginCol; j <= endCol; ++j) {
             for (int32_t k = beginCol; k <= endRow; ++k) {
                 mutex.lock();
-                c[i][j] += a[i][k] * b[k][j];
+                (*c)[i][j] += (*a)[i][k] * (*b)[k][j];
                 mutex.unlock();
             }
         }
@@ -62,9 +62,9 @@ fn mult(matrix &a, matrix &b, matrix &c, int32_t number, int32_t blocks) {
 }
 
 void *mult_pair(void *input) {
-    matrix a = ((struct args*)input)->a;
-    matrix b = ((struct args*)input)->b;
-    matrix c = ((struct args*)input)->c;
+    auto a = ((struct args*)input)->a;
+    auto b = ((struct args*)input)->b;
+    auto c = ((struct args*)input)->c;
     int32_t i = ((struct args*)input)->i;
     int32_t k = ((struct args*)input)->k;
     if (i == k * k - 1) {
@@ -118,7 +118,7 @@ fn main(int32_t argc, char **argv)->int32_t {
         for (int32_t i = 0; i < k * k; i += 2) {
 
             pthread_t thread;
-            args arguments = args(a, b, c, i, k);
+            args arguments = args(&a, &b, &c, i, k);
 
             pthread_create(&thread, nullptr, mult_pair, (void *)&arguments);
             threads.push_back(thread);
