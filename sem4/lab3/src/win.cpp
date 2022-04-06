@@ -1,37 +1,41 @@
+#include <stdio.h>
+#include <windows.h>
+#include <malloc.h>
 #include <chrono>
 #include <cstdint>
 #include <cstdio>
 #include <memory>
 #include <mutex>
 #include <vector>
+#include <winnt.h>
 #define fn auto
 #define var auto
 #define let const auto
 #define matrix std::vector<std::vector<int32_t>>
 
-#include <pthread.h>
-struct args
+typedef struct MyArgs
 {
     matrix &a;
     matrix &b;
     matrix &c;
     int32_t i;
     int32_t k;
-    args(matrix &a, matrix &b, matrix &c, int32_t i, int32_t k) : a(a), b(b), c(c), i(i), k(k){}
-};
+} ARGS, *PARGS;
 
 class Mutex {
   public:
-    pthread_mutex_t mutex;
-    void lock() {
-        pthread_mutex_lock(&mutex);
+    HANDLE mutex;
+    Mutex(){
+        this->mutex = CreateMutex(NULL,
+                             FALSE,
+                             NULL); // object name
     }
-    void unlock() {
-        pthread_mutex_unlock(&mutex);
-    }
+    void lock() { WaitForSingleObject(mutex, INFINITE); }
+    void unlock() { ReleaseMutex(mutex); }
 };
-Mutex mutex;
 
+
+Mutex mtx;
 std::vector<int32_t> factors(int32_t n) {
     std::vector<int32_t> out;
     for (int32_t i = 1; i <= n; ++i) {
@@ -53,20 +57,20 @@ fn mult(matrix &a, matrix &b, matrix &c, int32_t number, int32_t blocks) {
     for (int32_t i = beginRow; i <= endRow; ++i) {
         for (int32_t j = beginCol; j <= endCol; ++j) {
             for (int32_t k = beginCol; k <= endRow; ++k) {
-                mutex.lock();
+                mtx.lock();
                 c[i][j] += a[i][k] * b[k][j];
-                mutex.unlock();
+                mtx.unlock();
             }
         }
     }
 }
 
-void *mult_pair(void *input) {
-    matrix a = ((struct args*)input)->a;
-    matrix b = ((struct args*)input)->b;
-    matrix c = ((struct args*)input)->c;
-    int32_t i = ((struct args*)input)->i;
-    int32_t k = ((struct args*)input)->k;
+DWORD WINAPI *mult_pair(LPVOID input) {
+    matrix a = ((PARGS)input)->a;
+    matrix b = ((PARGS)input)->b;
+    matrix c = ((PARGS)input)->c;
+    int32_t i = ((PARGS)input)->i;
+    int32_t k = ((PARGS)input)->k;
     if (i == k * k - 1) {
         mult(a, b, c, i, k);
     } else {
@@ -76,15 +80,13 @@ void *mult_pair(void *input) {
     return NULL;
 }
 
-
 fn main(int32_t argc, char **argv)->int32_t {
-    int32_t n;
-    pthread_mutex_init(&mutex.mutex, NULL);
-
+    int n;
     let filename = "input";
     let input = fopen(filename, "r");
 
     fscanf(input, "%d", &n);
+    printf("%d\n", n);
 
     matrix a(n), b(n), c(n);
 
@@ -112,37 +114,52 @@ fn main(int32_t argc, char **argv)->int32_t {
         }
     }
 
+
+    PARGS pDataArray [n];
+    HANDLE hThreadArray[n];
+    DWORD dwThreadIdArray[n];
+
     for (let k : factors(n)) {
-        std::vector<pthread_t> threads;
+        printf("k: %d\n", k);
         let start = std::chrono::steady_clock::now();
         for (int32_t i = 0; i < k * k; i += 2) {
-
-            pthread_t thread;
-            args arguments = args(a, b, c, i, k);
-
-            pthread_create(&thread, nullptr, mult_pair, (void *)&arguments);
-            threads.push_back(thread);
+            pDataArray[i] = (PARGS) HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY,
+                sizeof(ARGS));
+            HANDLE thread;
+            pDataArray[i]->a = a;
+            pDataArray[i]->b = a;
+            pDataArray[i]->c = c;
+            pDataArray[i]->i = i;
+            pDataArray[i]->k = k;
+            hThreadArray[i/2] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) mult_pair, pDataArray[i], 0, &dwThreadIdArray[i]);
+            if (hThreadArray[i] == NULL) {
+                printf("Cannot create thread\n");
+                ExitProcess(3);
+            }
         }
-        for (var &thread : threads) {
-            pthread_join(thread, NULL);
-        }
-
+        int count = k == 1 ? 1 : k*k/2;
+        WaitForMultipleObjects(count, hThreadArray, TRUE, INFINITE);
         let end = std::chrono::steady_clock::now();
         let time =
             std::chrono::duration_cast<std::chrono::nanoseconds>(end - start)
                 .count();
 
+        for (int i = 0; i < n; i++) {
+            CloseHandle(hThreadArray[i]);
+            if (pDataArray[i] != NULL) {
+                HeapFree(GetProcessHeap(), 0, pDataArray[i]);
+                pDataArray[i] = NULL;
+            }
+        }
         printf("%ld\n", time);
         for (var i = 0; i < n; ++i) {
             for (var j = 0; j < n; ++j) {
                 printf("%d ", c[i][j]);
-                c[i][j] = 0;
+                c[i][j] = -1;
             }
             printf("\n");
         }
     }
-
-    pthread_mutex_destroy(&mutex.mutex);
 
     return 0;
 }

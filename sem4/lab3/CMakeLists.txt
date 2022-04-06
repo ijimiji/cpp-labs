@@ -1,7 +1,7 @@
 file(GLOB sources
-     "src/posix.cpp"
+     "src/win.cpp"
 )
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(matrix ${sources})
+add_executable(matrix WIN32 ${sources})
