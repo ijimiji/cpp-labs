@@ -3,4 +3,6 @@ project(process)
 set (CMAKE_CXX_STANDARD 20)
 
 add_subdirectory(kill)
+include_directories(kill)
+
 add_subdirectory(user)

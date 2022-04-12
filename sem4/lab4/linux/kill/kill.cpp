@@ -1,27 +1,38 @@
-#include <cstdint>
+#include "kill.hpp"
 #include <cstdlib>
-#include <iostream>
-#include <map>
-#include <signal.h>
-#include <sstream>
-#include <string>
-#include <sys/types.h>
-#include <vector>
 
-using std::cout;
-using std::map;
-using std::string;
-using std::vector;
+std::string getvar(std::string variable){
+    auto var = std::getenv(variable.c_str());
+    if (var){
+        return std::string(var);
+    } else {
+        return "";
+    }
+}
 
-string yellow(string text) { return "\033[33m" + text + "\033[39m"; }
+bool killProcessFromVariable(std::string variable) {
+    auto var = getvar(variable);
+    if (var != "") {
+        auto processes = std::string(var);
+        std::stringstream ss(processes);
+        std::string processName;
+        while (std::getline(ss, processName, ',')) {
+            killProcess(processName);
+        }
+        return true;
+    } else {
+        std::cout << yellow("[LOG] PROC_TO_KILL is empty. Doing nothing...\n");
+        return false;
+    }
+}
 
-string green(string text) { return "\033[32m" + text + "\033[39m"; }
+std::string red(std::string text) { return "\033[31m" + text + "\033[39m"; }
+std::string green(std::string text) { return "\033[32m" + text + "\033[39m"; }
+std::string yellow(std::string text) { return "\033[33m" + text + "\033[39m"; }
 
-string red(string text) { return "\033[31m" + text + "\033[39m"; }
-
-auto parseArgs(int32_t argc, char *argv[]) {
-    map<string, string> parsedArgs;
-    vector<string> args(argv + 1, argv + argc);
+std::map<std::string, std::string> parseArgs(int32_t argc, char *argv[]) {
+    std::map<std::string, std::string> parsedArgs;
+    std::vector<std::string> args(argv + 1, argv + argc);
     for (const auto &arg : args) {
         if (arg == "--id") {
             parsedArgs["id"] = *(&arg + 1);
@@ -33,46 +44,28 @@ auto parseArgs(int32_t argc, char *argv[]) {
     return parsedArgs;
 }
 
-auto killProcess(int32_t id) {
+bool killProcess(int32_t id) {
     auto success = kill(id, SIGKILL) == 0 ? true : false;
 
     if (success) {
-        cout << green("Killed process: " + std::to_string(id)) << "\n";
+        std::cout << green("Killed process: " + std::to_string(id)) << "\n";
     } else {
-        cout << red("Could not kill process: " + std::to_string(id)) << "\n";
+        std::cout << red("Could not kill process: " + std::to_string(id))
+                  << "\n";
     }
+    return success;
 }
-auto killProcess(string processName) {
+
+void killProcess(std::string processName) {
     char buf[512];
     FILE *cmd_pipe = popen(("pidof " + processName).c_str(), "r");
     fgets(buf, 512, cmd_pipe);
     pclose(cmd_pipe);
-    string ids(buf);
+    std::string ids(buf);
     std::stringstream ss(ids);
-    string id;
+    std::string id;
     while (ss >> id) {
+        std::cout << id << "\n";
         killProcess(std::stoi(id));
     }
-}
-
-auto main(int32_t argc, char *argv[]) -> int32_t {
-    auto args = parseArgs(argc, argv);
-    auto var = std::getenv("PROC_TO_KILL");
-    if (var) {
-        auto processes = string(var);
-        std::stringstream ss(processes);
-        string processName;
-        while (std::getline(ss, processName, ',')) {
-            killProcess(processName);
-        }
-    } else {
-        std::cout << yellow("[LOG] PROC_TO_KILL is empty. Doing nothing...\n");
-    }
-
-    if (args.find("id") != args.end()) {
-        killProcess(std::stoi(args["id"]));
-    } else if (args.find("name") != args.end()) {
-        killProcess(args["name"]);
-    }
-    return 0;
 }
