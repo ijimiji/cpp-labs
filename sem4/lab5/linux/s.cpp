@@ -1,14 +1,13 @@
 #include "pipe.hpp"
+#include <string>
 
 fn main()->int32_t {
     Pipe("p2s", "stdout", "S", [](vector<int32_t> in) {
-        vector<int32_t> out;
         int32_t sum = 0;
         for (auto number : in) {
             sum += number;
         }
-        out.push_back(sum);
-        return out;
+        return std::to_string(sum);
     });
     return 0;
 }

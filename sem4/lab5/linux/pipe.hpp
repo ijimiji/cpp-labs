@@ -17,30 +17,24 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-using std::string, std::vector, std::cout, std::function, std::stringstream;
+using std::string, std::vector, std::cout, std::function, std::stringstream, std::to_string;
 
 string red(string text) { return "\033[31m" + text + "\033[39m"; }
 string green(string text) { return "\033[32m" + text + "\033[39m"; }
 string yellow(string text) { return "\033[33m" + text + "\033[39m"; }
 
 class Pipe{
-    string apply(string data, function<vector<int32_t>(vector<int32_t>)> f){
+    string apply(string data, function<string(vector<int32_t>)> f){
         stringstream ss(data);
         int32_t temp;
-        string msg;
         vector<int32_t> xs;
         while (ss >> temp){
             xs.push_back(temp);
-            // cout << red(std::to_string(temp)) << "\n";
         }
-        xs = f(xs);
-        for (let &x : xs){
-            msg += std::to_string(x);
-        }
-        return msg;
+        return f(xs);
     }
     public:
-    Pipe(string input, string output, string name, function<vector<int32_t>(vector<int32_t>)> f){
+    Pipe(string input, string output, string name, function<string(vector<int32_t>)> f){
         cout << green("Creating pipe " + name) << "\n";
 
         mkfifo(input.c_str(), rw);

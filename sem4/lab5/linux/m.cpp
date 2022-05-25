@@ -4,9 +4,10 @@
 
 int main() {
     Pipe("main2m", "m2a", "M", [](vector<int32_t> in) {
-        vector<int32_t> out;
+        string out;
         for (auto number : in) {
-            out.push_back(pow(number, 7));
+            out += to_string(pow(number, 7));
+            out += " ";
         }
         return out;
     });

@@ -3,9 +3,9 @@
 
 fn main()->int32_t {
     Pipe("a2p", "p2s", "P", [](vector<int32_t> in){
-        vector<int32_t> out;
+        string out;
         for (auto number : in){
-            out.push_back(pow(number, 3));
+            out += to_string(pow(number, 3));
         }
         return out;
     });
