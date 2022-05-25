@@ -1,0 +1,22 @@
+[
+{
+  "directory": "/home/jahor/gits/cpp-labs/sem4/lab4/linux/build/kill",
+  "command": "/usr/bin/g++   -g -std=gnu++20 -o CMakeFiles/kill.dir/main.cpp.o -c /home/jahor/gits/cpp-labs/sem4/lab4/linux/kill/main.cpp",
+  "file": "/home/jahor/gits/cpp-labs/sem4/lab4/linux/kill/main.cpp"
+},
+{
+  "directory": "/home/jahor/gits/cpp-labs/sem4/lab4/linux/build/kill",
+  "command": "/usr/bin/g++   -g -std=gnu++20 -o CMakeFiles/kill.dir/kill.cpp.o -c /home/jahor/gits/cpp-labs/sem4/lab4/linux/kill/kill.cpp",
+  "file": "/home/jahor/gits/cpp-labs/sem4/lab4/linux/kill/kill.cpp"
+},
+{
+  "directory": "/home/jahor/gits/cpp-labs/sem4/lab4/linux/build/kill",
+  "command": "/usr/bin/g++   -g -std=gnu++20 -o CMakeFiles/libkill.dir/kill.cpp.o -c /home/jahor/gits/cpp-labs/sem4/lab4/linux/kill/kill.cpp",
+  "file": "/home/jahor/gits/cpp-labs/sem4/lab4/linux/kill/kill.cpp"
+},
+{
+  "directory": "/home/jahor/gits/cpp-labs/sem4/lab4/linux/build/user",
+  "command": "/usr/bin/g++  -I/home/jahor/gits/cpp-labs/sem4/lab4/linux/kill -g -std=gnu++20 -o CMakeFiles/user.dir/user.cpp.o -c /home/jahor/gits/cpp-labs/sem4/lab4/linux/user/user.cpp",
+  "file": "/home/jahor/gits/cpp-labs/sem4/lab4/linux/user/user.cpp"
+}
+]

@@ -1,0 +1,1 @@
+/usr/bin/g++ -g CMakeFiles/kill.dir/main.cpp.o CMakeFiles/kill.dir/kill.cpp.o -o kill 

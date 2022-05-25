@@ -1,0 +1,9 @@
+/home/jahor/gits/cpp-labs/sem4/lab4/linux/build/CMakeFiles/edit_cache.dir
+/home/jahor/gits/cpp-labs/sem4/lab4/linux/build/CMakeFiles/rebuild_cache.dir
+/home/jahor/gits/cpp-labs/sem4/lab4/linux/build/kill/CMakeFiles/kill.dir
+/home/jahor/gits/cpp-labs/sem4/lab4/linux/build/kill/CMakeFiles/libkill.dir
+/home/jahor/gits/cpp-labs/sem4/lab4/linux/build/kill/CMakeFiles/edit_cache.dir
+/home/jahor/gits/cpp-labs/sem4/lab4/linux/build/kill/CMakeFiles/rebuild_cache.dir
+/home/jahor/gits/cpp-labs/sem4/lab4/linux/build/user/CMakeFiles/user.dir
+/home/jahor/gits/cpp-labs/sem4/lab4/linux/build/user/CMakeFiles/edit_cache.dir
+/home/jahor/gits/cpp-labs/sem4/lab4/linux/build/user/CMakeFiles/rebuild_cache.dir

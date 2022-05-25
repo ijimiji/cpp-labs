@@ -1,0 +1,2 @@
+/usr/bin/ar qc liblibkill.a CMakeFiles/libkill.dir/kill.cpp.o
+/usr/bin/ranlib liblibkill.a
