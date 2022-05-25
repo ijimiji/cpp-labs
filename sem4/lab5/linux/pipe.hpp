@@ -24,17 +24,18 @@ string green(string text) { return "\033[32m" + text + "\033[39m"; }
 string yellow(string text) { return "\033[33m" + text + "\033[39m"; }
 
 class Pipe{
-    string apply(char *rawData, function<vector<int32_t>(vector<int32_t>)> f){
-        stringstream ss((string(rawData)));
+    string apply(string data, function<vector<int32_t>(vector<int32_t>)> f){
+        stringstream ss(data);
         int32_t temp;
         string msg;
         vector<int32_t> xs;
         while (ss >> temp){
             xs.push_back(temp);
+            // cout << red(std::to_string(temp)) << "\n";
         }
         xs = f(xs);
         for (let &x : xs){
-            msg += x;
+            msg += std::to_string(x);
         }
         return msg;
     }
@@ -42,22 +43,27 @@ class Pipe{
     Pipe(string input, string output, string name, function<vector<int32_t>(vector<int32_t>)> f){
         cout << green("Creating pipe " + name) << "\n";
 
-        let inputName = input.c_str();
-        let outputName = output.c_str();
-        mkfifo(inputName, rw);
+        mkfifo(input.c_str(), rw);
 
         char buffer[bufferSize];
-        {
-            let input = open(inputName, O_RDONLY);
-            read(input, buffer, bufferSize);
-            close(input);
 
-            var msg = apply(buffer, f);
-
-            let output = open(outputName, O_WRONLY);
-            write(output, msg.c_str(), msg.size() + 1);
-            close(output);
+        let inputHandle = open(input.c_str(), O_RDONLY);
+        var bytesRead = 0;
+        string data;
+        while ((bytesRead = read(inputHandle, buffer, sizeof(buffer))) > 0){
+            data += string(buffer);
         }
+        close(inputHandle);
+
+        var msg = apply(data, f);
+        if (output == "stdout"){
+            cout << msg << "\n";
+        } else {
+            let outputHandle = open(output.c_str(), O_WRONLY);
+            write(outputHandle, msg.c_str(), msg.size() + 1);
+            close(outputHandle);
+        }
+
         cout << green("Pipe " + name + " done") << "\n";
     }
 };
